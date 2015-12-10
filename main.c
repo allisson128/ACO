@@ -32,30 +32,30 @@ int main() {
 int* aco (double **graph, int size, int alpha, int beta, 
 	  double Q, double evaporation, int kmax) {
 
-  int i, j, r, ant, shortest, routechanging;
-  int sum, acc, stopflag;
+  int i, j, stopflag, ant, shortest, routechanging;
+  double sum, r, acc;
   //int kmax = 3;
   //int alpha       = 1;
   //int beta        = 1;
   //double evaporation = 0.5;
   //double Q           = 1;
 
-  int **pheromone   = (int**) malloc (size * sizeof(int*));
-  int **deltapher   = (int**) malloc (size * sizeof(int*));
+  double **pheromone   = (double**) malloc (size * sizeof(double*));
+  double **deltapher   = (double**) malloc (size * sizeof(double*));
   int **visited     = (int**) malloc (size * sizeof(int*));
   int **antposition = visited;
-  int **chance      = (int**) malloc (size * sizeof(int*));
+  double **chance      = (double**) malloc (size * sizeof(double*));
   int **route       = visited;
   int **previousroute = (int**) malloc (size * sizeof(int*));
 
   double *distancesLk = (double*) malloc (size * sizeof(int ));
   
   for (i = 0; i < size; ++i) {
-    pheromone[i] = (int*) malloc (size * sizeof(int));
-    deltapher[i] = (int*) malloc (size * sizeof(int));
-    visited[i]   = (int*) malloc (size * sizeof(int));
-    chance[i]    = (int*) malloc (size * sizeof(int));
-    /* route[i]     = (int*) malloc (size * sizeof(int)); */
+    pheromone[i]     = (double*) malloc (size * sizeof(double));
+    deltapher[i]     = (double*) malloc (size * sizeof(double));
+    visited[i]       = (int*) malloc (size * sizeof(int));
+    chance[i]        = (double*) malloc (size * sizeof(double));
+    previousroute[i] = (int*) malloc (size * sizeof(int));
   }
 
   for (i = 0; i < size; ++i) {
@@ -84,14 +84,16 @@ int* aco (double **graph, int size, int alpha, int beta,
       
 	for (j = 0; j < size; ++j)
 	  if (!contain(visited[ant], size, j)) 
-	    sum += chance[ant][j] / acc;
+	    sum += chance[ant][j] /= acc;
 
-	r = rand () % sum;
+	sum *= 100;
+
+	r = rand () % (int)round(sum);
 	sum = 0;
 	for (j = 0; j < size; ++j) 
 	  if (!contain (visited[ant], size, j)) {
 	    sum += chance[ant][j];
-	    if ( sum > r) {
+	    if ( (sum*100) > r) {
 	      visited[ant][i+1] = j;
 	      route  [ant][i+1] = j;
 	      break;
