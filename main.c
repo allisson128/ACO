@@ -5,6 +5,7 @@
 #include "dist.h"
 #include "path.h"
 
+#define BIGVALUE 1000000
 
 int  contain (int *vet, int size, int node);
 double distanceRoute (int *route, int size, double **graph);
@@ -21,18 +22,22 @@ int main() {
 
   srand (time(NULL));
 
-  grafo = matrix_maker (M15, 15);
-  caminho = aco (grafo, 15, 1, 1, 1, .5, 10);
-  printRoute (caminho, 15);
-  printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 15, grafo));
+  caminho = aco (M6, 6, 1, 1, 1, .5, 100);
+  printRoute (caminho, 6);
+  printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 6, M6));
+
+  /* grafo = matrix_maker (M15, 15); */
+  /* caminho = aco (grafo, 15, 1, 1, 1, .5, 10); */
+  /* printRoute (caminho, 15); */
+  /* printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 15, grafo)); */
 
   return 0;
 }
 
-int* aco (double **graph, int size, int alpha, int beta, 
+int* aco (double graph[][6], int size, int alpha, int beta, 
 	  double Q, double evaporation, int kmax) {
 
-  int i, j, stopflag, ant, shortest, routechanging;
+  int i, j, flag, ant, shortest, routechanging, biggest;
   double sum, r, acc;
   //int kmax = 3;
   //int alpha       = 1;
@@ -61,8 +66,8 @@ int* aco (double **graph, int size, int alpha, int beta,
   for (i = 0; i < size; ++i) {
     route[i][0] = visited[i][0] = i;
     for (j = 0; j < size; ++j) {
-      pheromone[i][j] = 1;
-      deltapher[i][j] = 0;
+      pheromone[i][j] = 1.0;
+      deltapher[i][j] = 0.0;
       visited[i][j] = -1;
     }
   }
@@ -75,31 +80,45 @@ int* aco (double **graph, int size, int alpha, int beta,
 
       for (i = 0; i < size - 1; ++i) { //find route
 	
-	sum = acc = 0;
+	sum = acc = 0.;
 	for (j = 0; j < size; ++j) 
-	  if (!contain(visited[ant], size, j)) 
-	    acc += chance[ant][j] = 
-	      pow (pheromone[ route[ant][i] ][j], alpha) * 
-	      pow (1.0/graph[ route[ant][i] ][j], beta);
-      
-	for (j = 0; j < size; ++j)
-	  if (!contain(visited[ant], size, j)) 
-	    sum += chance[ant][j] /= acc;
-
-	sum *= 100;
-
-	r = rand () % (int)round(sum);
-	sum = 0;
-	for (j = 0; j < size; ++j) 
-	  if (!contain (visited[ant], size, j)) {
-	    sum += chance[ant][j];
-	    if ( (sum*100) > r) {
-	      visited[ant][i+1] = j;
-	      route  [ant][i+1] = j;
-	      break;
-	    }
+	  if (!contain(visited[ant], size, j)) {
+	    /* acc += chance[ant][j] =  */
+	    /*   pow (pheromone[ route[ant][i] ][j], alpha) *  */
+	    /*   pow (1.0/graph[ route[ant][i] ][j], beta); */
+	    chance[ route[ant][i] ][j] = pheromone[ route[ant][i] ][j] * (1.0/graph[ route[ant][i] ][j]);
+	    acc = acc + chance[route[ant][i]][j];
 	  }
-      
+	flag = 1;
+	for (j = 0; j < size; ++j)
+	  if (!contain(visited[ant], size, j)) {
+
+	    if (flag) {
+	      biggest = j;
+	      flag = 0;
+	    }
+	    chance[route[ant][i]][j] /= acc;
+	    if (chance[route[ant][i]][j] > chance[route[ant][i]][biggest])
+	      biggest = j;
+	  }
+
+	route[ant][i+1] = biggest;
+
+	/* r = rand () % (int)sum; */
+	/* sum = 0; */
+	/* for (j = 0; j < size; ++j)  */
+	/*   if (!contain (visited[ant], size, j)) { */
+	/*     sum += chance[ant][j] * 100; */
+	/*     if (sum < r) { */
+	/*       visited[ant][i+1] = j+1; */
+	/*       route  [ant][i+1] = j+1; */
+	/*     } */
+	/*     else { */
+	/*       visited[ant][i+1] = j; */
+	/*       route  [ant][i+1] = j; */
+	/*       break; */
+	/*     } */
+	/*   }       */
       }//for i
 
       if ( (distancesLk[ant] = distanceRoute (route[ant], size, graph)) 
@@ -111,7 +130,7 @@ int* aco (double **graph, int size, int alpha, int beta,
     for (i = 0; i < size; ++i)
       for (j = 0; j < size; ++j)
 	deltapher[i][j] = 0;
-
+    
     for (ant = 0; ant < size; ++ant) 
       for (j = 0; j < size-1; ++j) 
 	deltapher[ route[ant][j] ][ route[ant][j+1] ] 
@@ -131,7 +150,7 @@ int* aco (double **graph, int size, int alpha, int beta,
   }while (routechanging++ < kmax);
 
   return route[shortest];
-}
+ }
 
 int contain (int *vet, int size, int node) {
   int i;
