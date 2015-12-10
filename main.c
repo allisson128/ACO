@@ -6,53 +6,78 @@
 #include "path.h"
 
 int  contain (int *vet, int size, int node);
-double distanceRoute (int *route, int size, double **graph);
+double distanceRoute (int *route, int size, double graph[][6]);
 void copyroutefrom (int **source, int **goal, int size);
 int  sameroutes (int **r1, int **r2, int size);
 void printRoute (int *route, int size);
-int* aco (double **graph, int size, int alpha, int beta, 
+int* aco (double graph[][6], int size, int alpha, int beta, 
 	  double Q, double evaporation, int kmax);
 
 int main() {
   
   double **grafo;
   int     *caminho;
-  int      kmax = 10;
 
+  int alpha          = 1;
+  int beta           = 1;
+  double Q           = 1;
+  double evaporation = 0.5;
+  int kmax = 50;
+  int um = 1;
   srand (time(NULL));
 
-  /* caminho = aco (M6, 6, 1, 1, 1, .5, 100); */
-  /* printRoute (caminho, 7); */
-  /* printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 7, M6)); */
+  //***************************************************************
+  alpha       = 1;
+  beta        = 1;
+  Q           = 1;
+  evaporation = 0.5;
+    
+  caminho = aco (M6, 6, alpha, beta, Q, evaporation, kmax);
+  printRoute (caminho, 7);
+  printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 7, M6));
   
-  /* grafo = matrix_maker (M15, 15); */
-  /* caminho = aco (grafo, 15, 1, 1, 1, .5, kmax); */
-  /* printRoute (caminho, 16); */
-  /* printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 16, grafo)); */
+  //***************************************************************
+  /*
+  alpha       = 1;
+  beta        = 1;
+  Q           = 1;
+  evaporation = 0.5;
 
-  /* grafo = matrix_maker (M29, 29); */
-  /* caminho = aco (grafo, 29, 1, 1, 1, .5, kmax); */
-  /* printRoute (caminho, 30); */
-  /* printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 30, grafo)); */
+  grafo = matrix_maker (M15, 15);
+  caminho = aco (grafo, 15, alpha, beta, Q, evaporation, kmax);
+  printRoute (caminho, 16);
+  printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 16, grafo));
+  getchar();
+  //***************************************************************
+  alpha       = 1;
+  beta        = 1;
+  Q           = 1;
+  evaporation = 0.5;
+
+  grafo = matrix_maker (M29, 29);
+  caminho = aco (grafo, 29, alpha, beta, Q, evaporation, kmax);
+  printRoute (caminho, 30);
+  printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 30, grafo));
+  getchar();
+  //***************************************************************
+  alpha       = 1;
+  beta        = 1;
+  Q           = 1;
+  evaporation = 0.5;
 
   grafo = matrix_maker (M38, 38);
-  caminho = aco (grafo, 38, 1, 1, 1, .5, 50);
+  caminho = aco (grafo, 38, alpha, beta, Q, evaporation, kmax);
   printRoute (caminho, 39);
   printf ("\nDistancia = %.2lf\n", distanceRoute (caminho, 39, grafo));
-
+  */   
   return 0;
 }
 
-int* aco (double **graph, int size, int alpha, int beta, 
+int* aco (double graph[][6], int size, int alpha, int beta, 
 	  double Q, double evaporation, int kmax) {
 
   int i, j, flag, ant, shortest, pshortest, routechanging, biggest, stop = 0;
   double sum, r, acc;
-  //int kmax = 3;
-  //int alpha       = 1;
-  //int beta        = 1;
-  //double evaporation = 0.5;
-  //double Q           = 1;
 
   double **pheromone   = (double**) malloc (size * sizeof(double*));
   double **deltapher   = (double**) malloc (size * sizeof(double*));
@@ -106,10 +131,13 @@ int* aco (double **graph, int size, int alpha, int beta,
 	    /* acc += chance[ant][j] =  */
 	    /*   pow (pheromone[ route[ant][i] ][j], alpha) *  */
 	    /*   pow (1.0/graph[ route[ant][i] ][j], beta); */
-	    chance[ route[ant][i] ][j] = pheromone[ route[ant][i] ][j] * (1.0/graph[ route[ant][i] ][j]);
+	    chance[ route[ant][i] ][j] = 
+	      pow (pheromone[ route[ant][i] ][j], alpha) * 
+	      pow ( (1.0/graph[ route[ant][i] ][j]), beta );
 	    acc = acc + chance[route[ant][i]][j];
 	  }
 	flag = 1;
+
 	for (j = 0; j < size; ++j)
 	  if (!contain(visited[ant], size, j)) {
 
@@ -121,25 +149,20 @@ int* aco (double **graph, int size, int alpha, int beta,
 	    if (chance[route[ant][i]][j] > chance[route[ant][i]][biggest])
 	      biggest = j;
 	  }
-
 	route[ant][i+1] = biggest;
 
-	/* r = rand () % (int)sum; */
+	/* r = rand () % (int)(acc*10000); */
 	/* sum = 0; */
-	/* for (j = 0; j < size; ++j)  */
+	/* for (j = 0; j < size; ++j) */
 	/*   if (!contain (visited[ant], size, j)) { */
-	/*     sum += chance[ant][j] * 100; */
-	/*     if (sum < r) { */
-	/*       visited[ant][i+1] = j+1; */
-	/*       route  [ant][i+1] = j+1; */
-	/*     } */
-	/*     else { */
+	/*     sum += chance[ route[ant][i] ][j] * 10000; */
+	/*     if (sum > r) { */
+
 	/*       visited[ant][i+1] = j; */
 	/*       route  [ant][i+1] = j; */
 	/*       break; */
 	/*     } */
-	/*   }       */
-
+	/*   } */
       }//for i
 
       route[ant][i+1] = route[ant][0];
@@ -165,20 +188,20 @@ int* aco (double **graph, int size, int alpha, int beta,
 	pheromone[i][j] += deltapher[i][j];
       }
 
-    /* if (!sameroutes (route, previousroute, size)) { */
-    /*   routechanging = 0; */
-    /* } */
-
-    if (shortest != pshortest) {
+    if (!sameroutes (route, previousroute, size)) {
       routechanging = 0;
-      printf ("\n%d\n",shortest);
     }
+
+    /* if (shortest != pshortest) { */
+    /*   routechanging = 0; */
+    /*   printf ("\n%d\n",shortest); */
+    /* } */
 
     pshortest = shortest;
 
     copyroutefrom (route, previousroute, size);
 
-  }while (stop++ < kmax);
+  }while (routechanging++ < kmax && stop++ < kmax);
 
   return route[shortest];
  }
@@ -191,7 +214,7 @@ int contain (int *vet, int size, int node) {
   return 0;
 }
 
-double distanceRoute (int *route, int size, double **graph) {
+double distanceRoute (int *route, int size, double graph[][6]) {
 
   int i;
   double dist = 0;
@@ -206,7 +229,7 @@ void copyroutefrom (int **source, int **goal, int size) {
 
   int i,j;
   for (i = 0; i < size; ++i)
-    for (j = 0; j < size; ++j)
+    for (j = 0; j < size+1; ++j)
       goal[i][j] = source[i][j];
 }
 
