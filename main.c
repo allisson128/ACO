@@ -20,7 +20,7 @@ int main() {
 
   int alpha          = 1;
   int beta           = 1;
-  double Q           = 1;
+  double Q           = 2;
   double evaporation = 0.5;
   int kmax = 50;
   int um = 1;
@@ -139,30 +139,37 @@ int* aco (double graph[][6], int size, int alpha, int beta,
 	flag = 1;
 
 	for (j = 0; j < size; ++j)
-	  if (!contain(visited[ant], size, j)) {
-
-	    if (flag) {
-	      biggest = j;
-	      flag = 0;
-	    }
+	  if (!contain(visited[ant], size, j))
 	    chance[route[ant][i]][j] /= acc;
-	    if (chance[route[ant][i]][j] > chance[route[ant][i]][biggest])
-	      biggest = j;
-	  }
-	route[ant][i+1] = biggest;
 
-	/* r = rand () % (int)(acc*10000); */
-	/* sum = 0; */
 	/* for (j = 0; j < size; ++j) */
-	/*   if (!contain (visited[ant], size, j)) { */
-	/*     sum += chance[ route[ant][i] ][j] * 10000; */
-	/*     if (sum > r) { */
+	/*   if (!contain(visited[ant], size, j)) { */
 
-	/*       visited[ant][i+1] = j; */
-	/*       route  [ant][i+1] = j; */
-	/*       break; */
+	/*     if (flag) { */
+	/*       biggest = j; */
+	/*       flag = 0; */
 	/*     } */
+	/*     chance[route[ant][i]][j] /= acc; */
+	/*     if (chance[route[ant][i]][j] > chance[route[ant][i]][biggest]) */
+	/*       biggest = j; */
 	/*   } */
+	/* route[ant][i+1] = biggest; */
+
+	r = rand () % (int)((acc)*100);
+	sum = 0;
+	flag = 0;
+	for (j = 0; j < size; ++j)
+	  if (!contain (visited[ant], size, j)) {
+	    sum += chance[ route[ant][i] ][j] * 100;
+	    if (sum > r) {
+	      flag = 1;
+	      visited[ant][i+1] = j;
+	      route  [ant][i+1] = j;
+	      break;
+	    }
+	  }
+	if (!flag)
+	  route[ant][i+1] = j-1;
       }//for i
 
       route[ant][i+1] = route[ant][0];
